@@ -68,8 +68,17 @@ void DealPlayerCard(stack<Card> &deckLeft)
 
 bool HitPlayer(stack<Card> &deckLeft)
 {
-    DealPlayerCard(deckLeft);
-    return true;
+    if (playerRoundTotal < 16)
+        {     
+            DealPlayerCard(deckLeft);
+            return true;
+            HitPlayer(Deck);
+            
+        }
+        else
+        {
+            return false;
+        }
 }
 
 void DealDealerCard(stack<Card> &deckLeft)
@@ -82,8 +91,17 @@ void DealDealerCard(stack<Card> &deckLeft)
 
 bool HitDealer(stack<Card> &deckLeft)
 {
-   DealDealerCard(deckLeft);
-    return true;
+   if (dealerRoundTotal < playerRoundTotal)
+        {
+            DealDealerCard(deckLeft);
+            return true;
+            HitDealer(Deck);
+            
+        }
+        else
+        {
+            return false;
+        }
 }
 
 void NewGame(int totalGames)
@@ -95,8 +113,6 @@ void NewGame(int totalGames)
         EmptyDeck (Deck);
         Deck = ShuffleDeck(Cards);
         HitPlayer(Deck);
-        HitPlayer(Deck);
-        HitDealer(Deck);
         HitDealer(Deck);
         if(playerRoundTotal > dealerRoundTotal && playerRoundTotal <= 21)
         {
