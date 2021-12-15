@@ -5,8 +5,13 @@
 #include <random>
 #include <ctime>
 #include <algorithm>
-
 using namespace std;
+
+const int cardsInDeck = 52;
+int playerRoundTotal = 0;
+int dealerRoundTotal = 0;
+int playerTotalWins = 0;
+int dealerTotalWins = 0;
 
 class Card
 {
@@ -27,123 +32,89 @@ vector<Card> Cards =
     {1},{2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}
 };
 
-const int cardsInDeck = 52;
-stack<Card> DeckClear (stack<Card> &deck)
-{
-    for( int i =0; i < cardsInDeck; i++)
-    {
-        if(!deck.empty())
-        {
-            deck.pop();
-        }
-    }
-    return deck;
-}
-
-stack<Card> DeckShuffle (vector<Card> allCards)
-{
-    stack<Card> shuffledDeck;
-    std::random_device random_dev;
-    std::mt19937       generator(random_dev());
-    std::shuffle(allCards.begin(), allCards.end(), generator);
-        for(Card card : allCards)
-        {
-            shuffledDeck.push(card);
-        }
-    return shuffledDeck;
-}
-stack<Card> TestingDeck = DeckShuffle(Cards);
-
-const int totalGames = 100;
-void testNewRound(){}
-int PlayGame(const function<void()> &newGame)
-{
-    int numberOfGamesPlayed = 0;
-    for(int i = 0; i < totalGames; i++)
-    {
-        newGame();
-        numberOfGamesPlayed++;
-    }
-    return numberOfGamesPlayed;
-}
-
-
-
-int playerTotal = 0;
-int playerWins = 0;
-int dealerTotal = 0;
-int dealerWins = 0;
-int gamesPlayed = 0;
-
-void playerDraw(stack<Card> &deck)
-{
-    Card drawnCard = deck.top();
-    deck.pop();
-    playerTotal += drawnCard.cardValue;
-}
-
-bool playerHit(stack<Card> &deck)
-{
-    while(playerTotal < 16)
-    {
-        playerDraw(deck);
-    }
-    if(playerTotal > 21)
-    {
-        return false;
-    }
-    return true;
-}
-
-
-void dealerDraw(stack<Card> &deck)
-{
-    Card drawnCard = deck.top();
-    deck.pop();
-    dealerTotal += drawnCard.cardValue;
-
-}
-
-bool dealerHit(stack<Card> &deck)
-{
-    while(dealerTotal<playerTotal)
-    {
-        dealerDraw(deck);
-    }
-    if(dealerTotal > 21)
-    {
-        return false;
-    }
-    return true;
-}
-
 stack<Card> Deck;
 
-void newRound()
+stack<Card> EmptyDeck(stack<Card> &deckOfCards)
 {
-    DeckClear (Deck);
-    Deck = DeckShuffle(Cards);
-    gamesPlayed++;
-    playerTotal = 0;
-    dealerTotal = 0;
-    if(playerHit(Deck) && !dealerHit(Deck))
+    for(int removedCards = 0; removedCards < cardsInDeck; removedCards++)
     {
-        playerWins++;
-        cout << "Player won" <<endl;
+        if(!deckOfCards.empty())
+        {
+            deckOfCards.pop();
+        }
     }
-    else
+    return deckOfCards;
+}
+
+stack<Card> ShuffleDeck(vector<Card> deckOfCards)
+{
+    stack<Card> shuffledCards;
+    std::random_device random_dev;
+    std::mt19937       generator(random_dev());
+    std::shuffle(deckOfCards.begin(), deckOfCards.end(), generator);
+        for(Card card : deckOfCards)
+        {
+            shuffledCards.push(card);
+        }
+    return shuffledCards;
+}
+
+void DealPlayerCard(stack<Card> &deckLeft)
+{
+    Card dealtCard = deckLeft.top();
+    deckLeft.pop();
+    playerRoundTotal += dealtCard.cardValue;
+}
+
+bool HitPlayer(stack<Card> &deckLeft)
+{
+    DealPlayerCard(deckLeft);
+    return true;
+}
+
+void DealDealerCard(stack<Card> &deckLeft)
+{
+    Card dealtCard = deckLeft.top();
+    deckLeft.pop();
+    dealerRoundTotal += dealtCard.cardValue;
+
+}
+
+bool HitDealer(stack<Card> &deckLeft)
+{
+   DealDealerCard(deckLeft);
+    return true;
+}
+
+void NewGame(int totalGames)
+{
+    for(int gameNumber = 0; gameNumber < totalGames; gameNumber++)
     {
-        dealerWins++;
-        cout << "Dealer won" << endl;
+        playerRoundTotal = 0;
+        dealerRoundTotal = 0;
+        EmptyDeck (Deck);
+        Deck = ShuffleDeck(Cards);
+        HitPlayer(Deck);
+        HitPlayer(Deck);
+        HitDealer(Deck);
+        HitDealer(Deck);
+        if(playerRoundTotal > dealerRoundTotal && playerRoundTotal <= 21)
+        {
+            playerTotalWins++;
+            cout << "Player won" <<endl;
+        }
+        else
+        {
+            dealerTotalWins++;
+            cout << "Dealer won" << endl;
+        }
     }
 }
 
 int main()
 { 
-    cout<<"Hello world"<<endl;
-    PlayGame(newRound);
-    cout<<"Player won: " << playerWins << " times" << endl;
-    cout <<"Dealer won: " << dealerWins << " times" << endl;
-
+    NewGame(100);
+    cout << "Player wins: " << playerTotalWins << endl;
+    cout << "Dealer wins: " << dealerTotalWins << endl;
     return 0;
 }
